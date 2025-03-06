@@ -5,7 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "https://server-uzyq.onrender.com/",
+        hostname: "https://server-uzyq.onrender.com",
         port: "",
         pathname: "/uploads/**/*",
       },
