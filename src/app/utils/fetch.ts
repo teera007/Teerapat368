@@ -1,48 +1,65 @@
-import QueryString from "qs";
-
+import { cookies } from "next/headers";
+import qs from "qs";
+ 
 interface FetchResponse<T> {
     data: T | null;
-    status?: string;
+    status?: number;
     error?: {};
 }
-
+ 
 export const fetchApi = async <T>(
     path: string,
-    options: RequestInit = {
+    options: RequestInit & {} ={
         method: "GET"
     },
     populate?: any,
-    filter?: any
+    filters?: any
 ): Promise<FetchResponse<T>> => {
-    let headers = {
-        "Content-Type": "application/json"
-    }
-    // let url = `${process.env.API_URL}${path}`;
+    let headers = {};
+  const coockie = await cookies();
+  const accessToken = coockie.get("access_token")?.value || "";
+  if (accessToken !== "") {
+    headers = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    };
+  } else {
+    headers = {
+      "Content-Type": "application/json",
+    };
+  }
+    // let url = `${process.env.API_URL}${path}`
     let url: any;
     if (populate) {
-        let queryparams: any = {};
-        queryparams.populate = populate
-        if (filter) {
-            queryparams.filter = filter
+        let queryParams: any = {};
+        queryParams.populate = populate;
+        if (filters) {
+          queryParams.filters = filters;
         }
-            const newUrl = new URL(path, process.env.API_URL);
-            newUrl.search = QueryString.stringify({
-                populate: queryparams
-            })
-            url = newUrl;
-    }
+        const newUrl = new URL(path, process.env.API_URL||"http://localhost:1337");
+        // newUrl.search = qs.stringify({
+        //   populate: queryParams
+        // });
+        newUrl.search = qs.stringify(queryParams);
+        url = newUrl;
+      } else {
+        url = `${process.env.API_URL||"http://localhost:1337"}${path}`;
+      }
     try {
-        const response = await fetch(url, { ...options, headers });
+        const response = await fetch(url, { ...options, headers});
         if (!response.ok) {
-            throw new Error("Failed to fetch team members");
+            // throw new Error("Failed to fetch team members");
+            console.log(response)
         }
-
+ 
         const result = await response.json();
         return {
             data: result,
-            status: response.status.toString(),
-        };
+            status: response.status,
+        }
     } catch (error: unknown) {
-        return { data: null, status: "500", error: "error" };
+      console.log(error)
+        return {data: null, status: 500, error: "error"}
     }
-};
+}
+

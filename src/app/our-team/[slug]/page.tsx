@@ -1,12 +1,12 @@
 import qs from "qs";
- 
+
 import { BlockRenderer, TeamPageBlock } from "@/app/components/blocks";
 import { fetchApi } from "@/app/utils/fetch";
- 
+
 async function getTeamMember(slug: string) {
     const res = await fetchApi("/api/team-members", {}, {
         photo: {
-          fields: ['alternativeText', 'name', 'url']
+            fields: ['alternativeText', 'name', 'url']
         },
         blocks: {
             on: {
@@ -26,24 +26,24 @@ async function getTeamMember(slug: string) {
             },
         },
     },
-    {
-        slug: {
-            $eq: slug,
-        },
- 
-    }) as any;
- 
+        {
+            slug: {
+                $eq: slug,
+            },
+
+        }) as any;
+
     //     filters: {
-   
+
     // });
- 
+
     console.log(res.data)
     const teamMember = res.data?.data[0];
-      console.dir(teamMember, { depth: null });
-      console.log(teamMember)
+    console.dir(teamMember, { depth: null });
+    console.log(teamMember)
     return teamMember;
 }
- 
+
 interface UserProfile {
     id: number;
     documentId: string;
@@ -60,25 +60,25 @@ interface UserProfile {
         name: string;
         url: string;
     };
-      blocks: TeamPageBlock[];
+    blocks: TeamPageBlock[];
 }
- 
+
 export default async function TeamMemberDetail({
     params,
 }: {
     params: Promise<{ slug: string }>;
 }) {
     const { slug } = await params;
- 
+
     if (!slug) return <p>No member found</p>;
- 
+
     const teamMember = (await getTeamMember(slug)) as UserProfile;
- 
+
     return (
         <div>
-          {teamMember?.blocks.map((block: TeamPageBlock) => (
-            <BlockRenderer key={block.id} block={block} />
-          ))}
+            {teamMember && teamMember?.blocks.map((block: TeamPageBlock) => (
+                <BlockRenderer key={block.id} block={block} />
+            ))}
         </div>
     );
 }
